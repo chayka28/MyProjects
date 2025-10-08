@@ -1,0 +1,228 @@
+.links:hover{
+    
+}
+body {
+    background-color: brown;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+header {
+    background-color: #323131;
+    padding: 15px;
+}
+.logo-black {
+    color: #000;
+    font-size: 25px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+}
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+nav a {
+    color: #fff;
+    text-decoration: none;
+    padding: 5px 10px;
+    transition: background-color 0.2s ease;
+}
+nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+h1 {
+    font-size: 50px;
+    text-align: center;
+    margin: 20px 0;
+    margin-top: 60px; /* Отступ от верхнего меню */
+}
+section {
+    padding: 20px;
+    text-align: center;
+}
+.rounded-link {
+    display: inline-block;
+    background: #444;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    margin: 5px;
+}
+.albums-preview, .gallery-preview, .facts-preview {
+    margin-top: 30px;
+}
+.albums-list, .photos {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.album, .photo {
+    background: #333;
+    padding: 10px;
+    border-radius: 10px;
+}
+.facts-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+footer {
+    background-color: #2c2c2c;
+    text-align: center;
+    padding: 10px;
+    margin-top: 30px;
+}
+
+/* ПОЛНОСТЬЮ ПЕРЕПИСАННЫЙ КОД ДЛЯ ВЫПАДАЮЩЕГО МЕНЮ */
+div.gukisam_qytukan {
+    position: fixed; /* Фиксированное положение */
+    top: 0; /* Прижато к верхнему краю */
+    left: 0;
+    width: 100%;
+    background: #323131;
+    z-index: 1000; /* Высокий z-index */
+    margin: 0;
+    padding: 0;
+}
+
+div.gukisam_qytukan > div.content {
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #323131;
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 0;
+}
+
+div.gukisam_qytukan > div.content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    width: 100%;
+}
+
+div.gukisam_qytukan input[type="checkbox"] {
+    position: absolute;
+    right: 20px;
+    width: 40px;
+    height: 25px;
+    top: 15px; /* Позиционирование от верхнего края */
+    z-index: 1010; /* Выше чем кнопка */
+    cursor: pointer;
+    opacity: 0;
+}
+
+div.gukisam_qytukan input[type="checkbox"]:checked ~ div.content {
+    height: auto;
+    min-height: 180px;
+    opacity: 1;
+    padding: 60px 10px 20px 10px; /* Больше отступ сверху для кнопки */
+    overflow: visible;
+    margin-top: 0;
+}
+
+.toggle-button {
+    position: absolute;
+    right: 20px;
+    width: 40px;
+    height: 25px;
+    top: 15px; /* Позиционирование от верхнего края */
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 1005; /* Ниже чем чекбокс */
+    background: #323131;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 
+                inset 0 1px 2px rgba(255, 255, 255, 0.1),
+                inset 0 -2px 2px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-button:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 
+                inset 0 1px 3px rgba(255, 255, 255, 0.15),
+                inset 0 -2px 3px rgba(0, 0, 0, 0.4);
+    background: #3a3939;
+}
+
+.toggle-button:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-color: white transparent transparent transparent;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Когда меню открыто, кнопка становится крестиком */
+div.gukisam_qytukan input[type="checkbox"]:checked ~ .toggle-button:after {
+    border-color: transparent transparent transparent transparent;
+    background: linear-gradient(45deg, transparent 45%, white 45%, white 55%, transparent 55%),
+                linear-gradient(-45deg, transparent 45%, white 45%, white 55%, transparent 55%);
+    width: 20px;
+    height: 20px;
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .toggle-button {
+        right: 15px;
+        top: 12px;
+    }
+    
+    div.gukisam_qytukan input[type="checkbox"] {
+        right: 15px;
+        top: 12px;
+    }
+    
+    h1 {
+        margin-top: 80px; /* Больший отступ для мобильных */
+    }
+}
+
+/* Убираем старые стили которые мешают */
+div.gukisam_qytukan > div {
+    height: auto !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+    padding: 20px 10px !important;
+}
+
+/* Сдвигаем весь контент вниз чтобы не перекрывался меню */
+body {
+    padding-top: 50px; /* Отступ для фиксированного меню */
+    -webkit-animation: bugfix infinite 1s;
+}
+
+@-webkit-keyframes bugfix {
+    from {padding-top: 50px;}
+    to {padding-top: 50px;}
+}
