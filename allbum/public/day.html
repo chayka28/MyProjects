@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фотографии месяца</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: #1a1a1a; 
+            color: #fff;
+        }
+
+        h1 {
+            color: #ff416c;
+            margin: 20px 0;
+        }
+
+        .photo-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px auto;
+            width: 90%;
+        }
+
+        .photo-gallery img {
+            margin: 10px;
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 10px;
+            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        .back {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #8b0000;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            border: none;
+            cursor: pointer;
+        }
+
+        .back:hover {
+            background-color: #a52a2a;
+        }
+
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .fullscreen img {
+            max-width: 90%;
+            max-height: 80%;
+        }
+
+        .fullscreen .controls {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .fullscreen .arrow {
+            font-size: 3em;
+            color: rgba(255, 255, 255, 0.7);
+            pointer-events: auto;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .fullscreen .arrow.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .fullscreen .arrow:hover {
+            color: rgba(255, 255, 255, 1);
+        }
+
+        .fullscreen .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 2em;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+        }
+
+        .fullscreen .close:hover {
+            color: white;
+        }
+
+        .fullscreen .caption {
+            margin-top: 10px;
+            color: #ff416c;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            max-width: 80%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .fullscreen textarea {
+            margin-top: 20px;
+            width: 80%;
+            height: 50px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 10px;
+            resize: none;
+        }
+
+        .fullscreen textarea:focus {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        #editCaption {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Фотографии за месяц: <span id="monthName"></span></h1>
+    <div class="photo-gallery" id="photos">
+    </div>
+    <button class="back" onclick="goBack()">Вернуться назад</button>
+    <div class="fullscreen" id="fullscreen">
+        <span class="close" onclick="closeFullscreen()">✖</span>
+        <div class="controls">
+            <span id="prevPhoto" class="arrow">❮--</span>
+            <span id="nextPhoto" class="arrow">--❯</span>
+        </div>
+        <img src="" id="fullscreenImg" alt="Фото">
+        <div class="caption" id="captionDisplay"></div>
+        <textarea id="captionInput" placeholder="Добавьте подпись..."></textarea>
+        <button id="saveCaption">Сохранить подпись</button>
+        <button id="editCaption">Изменить подпись</button>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const month = params.get('month');
+        const photosContainer = document.getElementById("photos");
+        const fullscreen = document.getElementById("fullscreen");
+        const fullscreenImg = document.getElementById("fullscreenImg");
+        const captionInput = document.getElementById("captionInput");
+        const captionDisplay = document.getElementById("captionDisplay");
+        const saveCaptionBtn = document.getElementById("saveCaption");
+        const editCaptionBtn = document.getElementById("editCaption");
+        const prevPhotoBtn = document.getElementById("prevPhoto");
+        const nextPhotoBtn = document.getElementById("nextPhoto");
+
+        let currentPhotoIndex = 0;
+        let photos = [];
+
+        document.getElementById("monthName").innerText = month || "Не указан";
+
+        async function loadPhotos() {
+            try {
+                const response = await fetch(`/photos?month=${encodeURIComponent(month)}`);
+                if (!response.ok) throw new Error("Ошибка загрузки фотографий");
+
+                photos = await response.json();
+                photos.forEach((photo, index) => {
+                    const img = document.createElement("img");
+                    img.src = photo;
+                    img.alt = `Фото ${index + 1}`;
+                    img.addEventListener("click", () => openFullscreen(index));
+                    photosContainer.appendChild(img);
+                });
+            } catch (error) {
+                console.error("Ошибка:", error);
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function openFullscreen(index) {
+            currentPhotoIndex = index;
+            updateFullscreenPhoto();
+            fullscreen.style.display = "flex";
+            document.addEventListener("keydown", handleKeydown);
+        }
+
+        function closeFullscreen() {
+            fullscreen.style.display = "none";
+            document.removeEventListener("keydown", handleKeydown);
+        }
+
+        async function updateFullscreenPhoto() {
+            const currentPhoto = photos[currentPhotoIndex];
+            fullscreenImg.src = currentPhoto;
+
+            try {
+                const response = await fetch(`/caption?photo=${encodeURIComponent(currentPhoto)}`);
+                if (response.ok) {
+                    const { caption } = await response.json();
+                    captionDisplay.innerText = caption || "Нет подписи";
+                    captionInput.value = caption || "";
+                    toggleCaptionEditing(caption);
+                }
+            } catch (error) {
+                console.error("Ошибка загрузки подписи:", error);
+            }
+
+            prevPhotoBtn.classList.toggle("disabled", currentPhotoIndex === 0);
+            nextPhotoBtn.classList.toggle("disabled", currentPhotoIndex === photos.length - 1);
+        }
+
+        function toggleCaptionEditing(isSaved) {
+            if (isSaved) {
+                captionInput.style.display = "none";
+                saveCaptionBtn.style.display = "none";
+                editCaptionBtn.style.display = "block";
+            } else {
+                captionInput.style.display = "block";
+                saveCaptionBtn.style.display = "block";
+                editCaptionBtn.style.display = "none";
+            }
+        }
+
+        saveCaptionBtn.addEventListener("click", async () => {
+            const currentPhoto = photos[currentPhotoIndex];
+            const newCaption = captionInput.value.trim();
+
+            try {
+                const response = await fetch('/caption', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ photo: currentPhoto, caption: newCaption }),
+                });
+
+                if (response.ok) {
+                    captionDisplay.innerText = newCaption;
+                    toggleCaptionEditing(true); 
+                }
+            } catch (error) {
+                console.error("Ошибка сохранения подписи:", error);
+            }
+        });
+
+        editCaptionBtn.addEventListener("click", () => {
+            toggleCaptionEditing(false); 
+        });
+
+        prevPhotoBtn.addEventListener("click", () => {
+            if (currentPhotoIndex > 0) {
+                currentPhotoIndex--;
+                updateFullscreenPhoto();
+            }
+        });
+
+        nextPhotoBtn.addEventListener("click", () => {
+            if (currentPhotoIndex < photos.length - 1) {
+                currentPhotoIndex++;
+                updateFullscreenPhoto();
+            }
+        });
+
+        function handleKeydown(event) {
+            if (event.key === "ArrowLeft" && currentPhotoIndex > 0) {
+                currentPhotoIndex--;
+                updateFullscreenPhoto();
+            } else if (event.key === "ArrowRight" && currentPhotoIndex < photos.length - 1) {
+                currentPhotoIndex++;
+                updateFullscreenPhoto();
+            } else if (event.key === "Escape") {
+                closeFullscreen();
+            }
+        }
+
+        loadPhotos();
+    </script>
+</body>
+</html>
